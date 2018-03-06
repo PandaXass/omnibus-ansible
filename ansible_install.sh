@@ -95,7 +95,6 @@ if [ ! "$(which ansible-playbook)" ]; then
 
     # Install passlib for encrypt
     apt_install build-essential libssl-dev
-    [ X`lsb_release -c | grep trusty | wc -l` = X1 ] && pip install cryptography==2.0.3
     apt_install python-all-dev python-mysqldb sshpass && pip install pyrax pysphere boto passlib dnspython
 
     # Install Ansible module dependencies
@@ -138,9 +137,17 @@ if [ ! "$(which ansible-playbook)" ]; then
   mkdir -p /etc/ansible/
   printf "%s\n" "[local]" "localhost" > /etc/ansible/hosts
   if [ -z "$ANSIBLE_VERSION" ]; then
-    pip install -q ansible
+    if [ X`lsb_release -c | grep trusty | wc -l` = X1 ]; then
+      pip install cryptography==2.0.3 ansible
+    else
+      pip install -q ansible
+    fi
   else
-    pip install -q ansible=="$ANSIBLE_VERSION"
+    if [ X`lsb_release -c | grep trusty | wc -l` = X1 ]; then
+      pip install -q cryptography==2.0.3 ansible=="$ANSIBLE_VERSION"
+    else
+      pip install ansible=="$ANSIBLE_VERSION"
+    fi
   fi
   if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ] || [ -f /etc/oracle-release ] || [ -f /etc/system-release ]; then
     # Fix for pycrypto pip / yum issue
